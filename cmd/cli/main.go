@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	duration = flag.Duration("d", time.Minute, "test duration for each case")
+	duration = flag.Duration("d", time.Second, "test duration for each case")
 	c        = flag.Int("c", runtime.NumCPU(), "concurrent goroutines")
 	size     = flag.Int("size", 256, "data size")
 	fsync    = flag.Bool("fsync", false, "fsync")
@@ -298,9 +298,8 @@ func testDelete(name string, store kvbench.Store) {
 }
 
 func genKey(i uint64) []byte {
-	r := make([]byte, 9)
-	r[0] = 'k'
-	binary.BigEndian.PutUint64(r[1:], i)
+	r := make([]byte, 8)
+	binary.BigEndian.PutUint64(r, i)
 	return r
 }
 
@@ -310,6 +309,11 @@ func getStore(s string, fsync bool, path string) (kvbench.Store, string, error) 
 	switch s {
 	default:
 		err = fmt.Errorf("unknown store type: %v", s)
+	case "cannyls":
+		if path == "" {
+			path = "cannyls.lusf"
+		}
+		store, err = kvbench.NewCannylsStore(path, fsync)
 	case "map":
 		if path == "" {
 			path = "map.db"
@@ -351,16 +355,6 @@ func getStore(s string, fsync bool, path string) (kvbench.Store, string, error) 
 			path = "buntdb.db"
 		}
 		store, err = kvbench.NewBuntdbStore(path, fsync)
-	case "rocksdb":
-		if path == "" {
-			path = "rocksdb.db"
-		}
-		store, err = kvbench.NewRocksdbStore(path, fsync)
-	case "pebble":
-		if path == "" {
-			path = "pebble.db"
-		}
-		store, err = kvbench.NewRocksdbStore(path, fsync)
 	case "pogreb":
 		if path == "" {
 			path = "pogreb.db"
@@ -371,6 +365,11 @@ func getStore(s string, fsync bool, path string) (kvbench.Store, string, error) 
 			path = "nutsdb.db"
 		}
 		store, err = kvbench.NewNutsdbStore(path, fsync)
+	case "pebble":
+		if path == "" {
+			path = "pebble.db"
+		}
+		store, err = kvbench.NewPebbleStore(path, fsync)
 	}
 
 	return store, path, err

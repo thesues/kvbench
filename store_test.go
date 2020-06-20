@@ -9,6 +9,7 @@ import (
 
 var count = flag.Int("count", 1000, "item count for test")
 
+/*
 var stores = []struct {
 	Name    string
 	Path    string
@@ -20,7 +21,6 @@ var stores = []struct {
 	{"leveldb", "leveldb.db", NewLevelDBStore},
 	{"kv", "kv.db", NewKVStore},
 	{"buntdb", "buntdb.db", NewBuntdbStore},
-	{"rocksdb", "rocksdb.db", NewRocksdbStore},
 	{"pebble", "pebble.db", NewPebbleStore},
 	{"pogreb", "pogreb.db", NewPogrebStore},
 	{"btree", "btree.db", NewBTreeStore},
@@ -28,6 +28,18 @@ var stores = []struct {
 	{"nutsdb", "nutsdb.db", NewNutsdbStore},
 	{"map", "map.db", NewMapStore},
 	{"map/memory", ":memory:", NewMapStore},
+}
+*/
+var stores = []struct {
+	Name    string
+	Path    string
+	Factory func(path string, fsync bool) (Store, error)
+}{
+	{"bolt", "bolt.db", NewBboltStore},
+	{"leveldb", "leveldb.db", NewLevelDBStore},
+	{"cannyls", "cannyls.lusf", NewCannylsStore},
+	{"badger", "badger.db", NewBadgerStore},
+	{"pogreb", "pogreb.db", NewPogrebStore},
 }
 
 func prefixKey(i int) []byte {

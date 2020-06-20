@@ -27,7 +27,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20190728182440-6a916e37a237 // indirect
 	github.com/smallnest/log v0.0.0-20190128090703-5dc5752d8772
 	github.com/syndtr/goleveldb v1.0.0
-	github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c
+	github.com/thesues/cannyls-go v0.2.1-0.20200618205448-4b029b36ba19
 	github.com/tidwall/btree v0.0.0-20191029221954-400434d76274
 	github.com/tidwall/buntdb v1.1.2
 	github.com/tidwall/gjson v1.6.0 // indirect
