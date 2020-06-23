@@ -365,11 +365,11 @@ func getStore(s string, fsync bool, path string) (kvbench.Store, string, error) 
 			path = "nutsdb.db"
 		}
 		store, err = kvbench.NewNutsdbStore(path, fsync)
-	case "pebble":
+	case "file":
 		if path == "" {
-			path = "pebble.db"
+			path = "filestore.db"
 		}
-		store, err = kvbench.NewPebbleStore(path, fsync)
+		store, err = kvbench.NewFileStore(path, fsync)
 	}
 
 	return store, path, err

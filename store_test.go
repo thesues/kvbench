@@ -40,6 +40,7 @@ var stores = []struct {
 	{"cannyls", "cannyls.lusf", NewCannylsStore},
 	{"badger", "badger.db", NewBadgerStore},
 	{"pogreb", "pogreb.db", NewPogrebStore},
+	{"file", "filestore.db", NewFileStore},
 }
 
 func prefixKey(i int) []byte {

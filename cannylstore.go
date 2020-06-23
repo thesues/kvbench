@@ -1,15 +1,13 @@
 package kvbench
 
 import (
-	"sync"
-
 	"github.com/thesues/cannyls-go/block"
 	"github.com/thesues/cannyls-go/lump"
 	cannyls "github.com/thesues/cannyls-go/storage"
 )
 
 type CannylsStore struct {
-	sync.Mutex
+	//sync.RWMutex
 	db    *cannyls.Storage
 	ab    *block.AlignedBytes
 	fsync bool
@@ -34,12 +32,15 @@ func (s *CannylsStore) Close() error {
 }
 
 func (s *CannylsStore) PSet(keys, vals [][]byte) error {
-	s.Lock()
-	defer s.Unlock()
+	ab := block.NewAlignedBytes(512, block.Min())
 	for i := range keys {
-		err := s.set(keys[i], vals[i])
-		if err != nil {
-			return err
+		id, _ := lump.FromBytes(keys[i])
+		ab.Resize(uint32(len(vals[i])))
+		lumpData := lump.NewLumpDataWithAb(ab)
+		s.db.Put(id, lumpData)
+		//s.db.PutEmbed(id, value)
+		if s.fsync {
+			s.db.JournalSync()
 		}
 	}
 	s.flushDB()
@@ -52,18 +53,19 @@ func (s *CannylsStore) PGet(keys [][]byte) ([][]byte, []bool, error) {
 }
 
 func (s *CannylsStore) Set(key, value []byte) error {
-	s.Lock()
-	defer s.Unlock()
 	return s.set(key, value)
-
 }
+
 func (s *CannylsStore) set(key, value []byte) error {
 	if len(key) > 8 {
 		panic("not implemented")
 	}
 	id, _ := lump.FromBytes(key)
-	s.ab.Resize(uint32(len(value)))
-	lumpData := lump.NewLumpDataWithAb(s.ab)
+	lumpData := lump.NewLumpDataWithAb(block.FromBytes(value, block.Min()))
+	/*
+		s.ab.Resize(uint32(len(value)))
+		lumpData := lump.NewLumpDataWithAb(s.ab)
+	*/
 	s.db.Put(id, lumpData)
 	//s.db.PutEmbed(id, value)
 	if s.fsync {
@@ -73,8 +75,6 @@ func (s *CannylsStore) set(key, value []byte) error {
 }
 
 func (s *CannylsStore) Get(key []byte) ([]byte, bool, error) {
-	s.Lock()
-	defer s.Unlock()
 	return s.get(key)
 
 }
@@ -88,8 +88,6 @@ func (s *CannylsStore) get(key []byte) ([]byte, bool, error) {
 }
 
 func (s *CannylsStore) Del(key []byte) (bool, error) {
-	s.Lock()
-	defer s.Unlock()
 	return s.del(key)
 
 }
@@ -108,8 +106,6 @@ func (s *CannylsStore) Keys(pattern []byte, limit int, withvals bool) ([][]byte,
 }
 
 func (s *CannylsStore) FlushDB() error {
-	s.Lock()
-	defer s.Unlock()
 	return s.flushDB()
 }
 func (s *CannylsStore) flushDB() error {
