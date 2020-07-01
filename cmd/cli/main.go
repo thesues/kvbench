@@ -166,7 +166,10 @@ func testGetSet(name string, store kvbench.Store) {
 			case <-ch:
 				return
 			default:
-				store.Set(genKey(i), data)
+				if err := store.Set(genKey(i), data); err != nil {
+					panic("set panic")
+				}
+
 				setCount++
 				i++
 			}

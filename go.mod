@@ -22,12 +22,14 @@ require (
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/facebookgo/subset v0.0.0-20150612182917-8dac2c3c4870 // indirect
 	github.com/golang/protobuf v1.3.5 // indirect
+	github.com/hashicorp/golang-lru v0.5.0
+	github.com/journeymidnight/aws-sdk-go v1.18.1 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20190728182440-6a916e37a237 // indirect
 	github.com/smallnest/log v0.0.0-20190128090703-5dc5752d8772
 	github.com/syndtr/goleveldb v1.0.0
-	github.com/thesues/cannyls-go v0.2.1-0.20200623011233-55e381817c29
+	github.com/thesues/cannyls-go v0.2.1-0.20200627064127-96382ad22fbe
 	github.com/tidwall/btree v0.0.0-20191029221954-400434d76274
 	github.com/tidwall/buntdb v1.1.2
 	github.com/tidwall/gjson v1.6.0 // indirect
@@ -35,6 +37,7 @@ require (
 	github.com/tidwall/pretty v1.0.1 // indirect
 	github.com/tidwall/redcon v1.3.2
 	github.com/tidwall/redlog v1.2.1
+	github.com/twinj/uuid v1.0.0 // indirect
 	github.com/xujiajun/nutsdb v0.5.0
 	go.etcd.io/bbolt v1.3.4
 	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59 // indirect

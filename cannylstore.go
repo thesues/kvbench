@@ -1,16 +1,17 @@
 package kvbench
 
 import (
+	lru "github.com/hashicorp/golang-lru"
 	"github.com/thesues/cannyls-go/block"
 	"github.com/thesues/cannyls-go/lump"
 	cannyls "github.com/thesues/cannyls-go/storage"
 )
 
 type CannylsStore struct {
-	//sync.RWMutex
-	db    *cannyls.Storage
-	ab    *block.AlignedBytes
-	fsync bool
+	db        *cannyls.Storage
+	ab        *block.AlignedBytes
+	readCache *lru.Cache
+	fsync     bool
 }
 
 func NewCannylsStore(path string, fsync bool) (Store, error) {
@@ -18,10 +19,12 @@ func NewCannylsStore(path string, fsync bool) (Store, error) {
 	if err != nil {
 		return nil, err
 	}
+	cache, err := lru.New(250000)
 	return &CannylsStore{
-		db:    db,
-		fsync: fsync,
-		ab:    block.NewAlignedBytes(512, block.Min()),
+		db:        db,
+		fsync:     fsync,
+		ab:        block.NewAlignedBytes(512, block.Min()),
+		readCache: cache,
 	}, nil
 
 }
@@ -40,10 +43,10 @@ func (s *CannylsStore) PSet(keys, vals [][]byte) error {
 		s.db.Put(id, lumpData)
 		//s.db.PutEmbed(id, value)
 		if s.fsync {
-			s.db.JournalSync()
+			s.db.Sync()
 		}
 	}
-	s.flushDB()
+	s.FlushDB()
 	return nil
 }
 
@@ -53,10 +56,6 @@ func (s *CannylsStore) PGet(keys [][]byte) ([][]byte, []bool, error) {
 }
 
 func (s *CannylsStore) Set(key, value []byte) error {
-	return s.set(key, value)
-}
-
-func (s *CannylsStore) set(key, value []byte) error {
 	if len(key) > 8 {
 		panic("not implemented")
 	}
@@ -67,22 +66,23 @@ func (s *CannylsStore) set(key, value []byte) error {
 		lumpData := lump.NewLumpDataWithAb(s.ab)
 	*/
 	s.db.Put(id, lumpData)
-	//s.db.PutEmbed(id, value)
+	s.readCache.Add(id.U64(), lumpData)
 	if s.fsync {
-		s.db.JournalSync()
+		s.db.Sync()
 	}
 	return nil
 }
 
 func (s *CannylsStore) Get(key []byte) ([]byte, bool, error) {
-	return s.get(key)
-
-}
-func (s *CannylsStore) get(key []byte) ([]byte, bool, error) {
 	if len(key) > 8 {
 		panic("not implemented")
 	}
 	id, _ := lump.FromBytes(key)
+	if v, ok := s.readCache.Get(id.U64()); ok {
+
+		r := v.(lump.LumpData)
+		return r.Inner.AsBytes(), true, nil
+	}
 	data, err := s.db.Get(id)
 	return data, data != nil, err
 }
@@ -106,9 +106,10 @@ func (s *CannylsStore) Keys(pattern []byte, limit int, withvals bool) ([][]byte,
 }
 
 func (s *CannylsStore) FlushDB() error {
-	return s.flushDB()
+	s.db.Flush()
+	return nil
 }
 func (s *CannylsStore) flushDB() error {
-	s.db.JournalSync()
+	s.db.Sync()
 	return nil
 }
